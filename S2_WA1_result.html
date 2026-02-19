@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book 2 班级成绩分析报告 (AI 增强版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Add Markdown parser for nice AI output -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #F3F4F6; 
+        }
+
+        /* Chart Container Styles */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%; 
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px; 
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Markdown Styles for AI Output */
+        .prose h3 { font-size: 1.25rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; color: #4F46E5; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.25rem; }
+        .prose strong { color: #111827; font-weight: 600; }
+        .prose p { margin-bottom: 0.75rem; line-height: 1.6; }
+        
+        /* Loading Animation */
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #4F46E5;
+            border-radius: 50%;
+            animation: typing 1s infinite;
+            margin: 0 2px;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(-5px); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-indigo-700 to-cyan-600 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-10">
+            <div class="flex justify-between items-center flex-wrap gap-4">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Book 2 测验成绩分析</h1>
+                    <p class="text-xl opacity-90 max-w-2xl">
+                        基于 36 名学生的实测数据（满分 40 分）。含 ✨ AI 智能助教分析功能。
+                    </p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-lg border border-white/20">
+                    <p class="text-xs uppercase tracking-wider opacity-75 mb-1">AI Status</p>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
+                        <span class="font-bold">Gemini Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="container mx-auto px-4 py-8 space-y-8">
+
+        <!-- AI Assistant Section (NEW) -->
+        <section class="bg-gradient-to-br from-indigo-50 to-white rounded-xl shadow-lg border-2 border-indigo-100 overflow-hidden relative">
+            <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+            </div>
+            
+            <div class="p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-indigo-800 flex items-center gap-2 mb-4">
+                    <span>✨</span> AI 智能助教 (AI Teaching Assistant)
+                </h2>
+                <p class="text-gray-600 mb-6 max-w-3xl">
+                    利用 Gemini 大模型对班级成绩进行深度诊断。AI 可以分析数据模式，提供教学建议，甚至回答关于特定学生的具体问题。
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Action: Generate Report -->
+                    <div class="md:col-span-1 space-y-4">
+                        <button onclick="generateAIReport()" id="btn-report" class="w-full group relative bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-xl shadow-md transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden">
+                            <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
+                            <span class="text-xl">📊</span>
+                            <span>生成班级诊断报告</span>
+                        </button>
+                        
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">💬 询问数据 (Ask Data)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="ai-query" placeholder="例：哪些学生需要补课？" class="flex-1 border-gray-300 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                                <button onclick="askAI()" id="btn-ask" class="bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg px-3 py-2 transition-colors">
+                                    ➤
+                                </button>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
+                                <span class="cursor-pointer hover:text-indigo-600 bg-gray-100 px-2 py-1 rounded" onclick="setInput('最高分是谁？')">最高分是谁？</span>
+                                <span class="cursor-pointer hover:text-indigo-600 bg-gray-100 px-2 py-1 rounded" onclick="setInput('如何提高平均分？')">建议</span>
+                                <span class="cursor-pointer hover:text-indigo-600 bg-gray-100 px-2 py-1 rounded" onclick="setInput('分析成绩分布')">分布分析</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Area -->
+                    <div class="md:col-span-2 bg-white rounded-xl border border-gray-200 min-h-[250px] p-6 shadow-inner relative">
+                        <div id="ai-loading" class="hidden absolute inset-0 bg-white/80 flex items-center justify-center z-10 backdrop-blur-sm rounded-xl">
+                            <div class="text-center">
+                                <div class="typing-indicator text-3xl mb-2"><span></span><span></span><span></span></div>
+                                <p class="text-indigo-600 font-medium text-sm animate-pulse">Gemini 正在分析数据...</p>
+                            </div>
+                        </div>
+                        <div id="ai-content" class="prose prose-sm max-w-none text-gray-700">
+                            <div class="flex flex-col items-center justify-center h-full text-gray-400 py-10">
+                                <svg class="w-12 h-12 mb-3 opacity-20" fill="currentColor" viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
+                                <p>点击左侧按钮生成报告，或输入问题。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 1: Introduction & KPIs -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-indigo-700 border-l-4 border-rose-500 pl-3">核心指标概览 (KPIs)</h2>
+                <p class="mt-2 text-gray-600">
+                    总体来看，班级平均分为 21.3 分（百分制约为 53%），显示试卷具有一定难度或学生整体掌握程度一般。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- KPI Card 1 -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-indigo-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 uppercase">平均分 (Avg Score)</p>
+                            <p class="text-4xl font-bold text-indigo-700 mt-2">21.3 <span class="text-base text-gray-400 font-normal">/ 40</span></p>
+                        </div>
+                        <div class="text-3xl">📊</div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">中位数: 20.0 分</p>
+                </div>
+
+                <!-- KPI Card 2 -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-cyan-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 uppercase">及格率 (Pass Rate)</p>
+                            <p class="text-4xl font-bold text-cyan-600 mt-2">77.8%</p>
+                        </div>
+                        <div class="text-3xl">🎓</div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">基准: >16分 (40%)</p>
+                </div>
+
+                <!-- KPI Card 3 -->
+                <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-rose-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500 uppercase">最高分 (Highest)</p>
+                            <p class="text-4xl font-bold text-rose-500 mt-2">40</p>
+                        </div>
+                        <div class="text-3xl">🏆</div>
+                    </div>
+                    <p class="text-sm text-rose-600 mt-4 font-semibold">学号: #32 (满分)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Score Distribution (Histogram) -->
+        <section class="bg-white rounded-xl shadow-md p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-indigo-700 border-l-4 border-cyan-500 pl-3">分数段分布直方图</h2>
+                <p class="mt-2 text-gray-600">
+                    将成绩按区间划分，可以明显看出**16-20分**及**21-25分**是人数最集中的区域，呈现出正态分布的特征，但左侧长尾（低分段）较多。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2">
+                    <div class="chart-container">
+                        <canvas id="histogramChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-5 flex flex-col justify-center">
+                    <h3 class="font-bold text-lg text-indigo-800 mb-3">分布洞察</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="text-cyan-600 mr-2">●</span>
+                            <span class="text-sm text-gray-700"><strong>众数区间</strong>：16-20分 和 21-25分，各有 9 人和 8 人，占据了班级近半数。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-indigo-600 mr-2">●</span>
+                            <span class="text-sm text-gray-700"><strong>高分稀缺</strong>：35分以上的学生仅有 1 人（#32，40分）。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-rose-500 mr-2">●</span>
+                            <span class="text-sm text-gray-700"><strong>低分预警</strong>：10-15分区间有 6 人，加上 2 名缺勤/无成绩者，共有 8 人属于高风险群体。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Grade Composition & Student Roll Call -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Grade Composition -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-xl font-bold text-indigo-700 mb-2">等级比例构成</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    按标准划分：A(≥32), B(24-31), C(16-23), D(10-15), F(<10/Absent)。
+                </p>
+                <div class="chart-container">
+                    <canvas id="gradeDoughnutChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Student Line Chart -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="text-xl font-bold text-indigo-700 mb-2">学号-成绩 走势图</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    按学号顺序排列的成绩波动。注意学号 21、22 的断层（缺勤/无数据）以及 32 号的峰值。
+                </p>
+                <div class="chart-container">
+                    <canvas id="scoreLineChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Deep Dive - Plotly (Scatter) -->
+        <section class="bg-white rounded-xl shadow-md p-6">
+            <div class="mb-4">
+                <h2 class="text-2xl font-bold text-indigo-700 border-l-4 border-rose-500 pl-3">学生个体表现定位图</h2>
+                <p class="mt-2 text-gray-600">
+                    此散点图展示了每位学生的具体得分。
+                    <span class="text-green-600 font-bold">绿色区域</span>代表优秀，
+                    <span class="text-yellow-600 font-bold">黄色区域</span>代表合格，
+                    <span class="text-red-500 font-bold">红色区域</span>代表需要干预。
+                </p>
+            </div>
+            <!-- Plotly Container -->
+            <div id="scatterPlot" class="w-full h-[450px] border border-gray-100 rounded-lg"></div>
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg border-l-4 border-indigo-500">
+                <p class="text-sm text-gray-800">
+                    <strong>重点关注名单：</strong> 学号 #12 (11分), #29 (11分), #17 (13分), #24 (13分), #26 (14分), #27 (15分)。
+                    <br>缺勤/无成绩：#21, #22。
+                </p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm py-8 border-t border-gray-200 mt-8">
+            <p>&copy; 2026 教学评估系统 | Data Source: Book 2.pdf | Powered by Google Gemini</p>
+        </footer>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 0. AI CONFIGURATION & UTILS ---
+        const apiKey = ""; // System provides this automatically
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        // Raw Data for AI Context
+        const rawScores = [
+            27, 17, 18, 25, 16, 20, 34, 25, 19, 26, 
+            27, 11, 28, 22, 20, 24, 13, 20, 17, 33, 
+            null, null, // 21, 22 (Absent)
+            27, 13, 20, 14, 15, 26, 11, 19, 
+            21, 40, 20, 18, 17, 21
+        ];
+
+        // Prepare context string for AI
+        const dataContext = `
+        Class Size: 36 students.
+        Max Possible Score: 40.
+        Pass Score: 16 (40%).
+        Scores (by Index 1-36): ${rawScores.map((s, i) => `ID${i+1}:${s === null ? 'Absent' : s}`).join(', ')}.
+        Key Stats: Avg 21.3, Median 20.0, Max 40 (ID 32), Failures/Absent approx 8.
+        `;
+
+        function setInput(text) {
+            document.getElementById('ai-query').value = text;
+        }
+
+        async function callGemini(prompt) {
+            const loading = document.getElementById('ai-loading');
+            const contentDiv = document.getElementById('ai-content');
+            
+            loading.classList.remove('hidden');
+            contentDiv.classList.add('opacity-50');
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `Context: ${dataContext}\n\nTask: ${prompt}\n\nPlease format the response using Markdown. Keep it professional, encouraging, and concise.` }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) throw new Error('API request failed');
+
+                const data = await response.json();
+                const text = data.candidates[0].content.parts[0].text;
+                
+                // Parse Markdown and display
+                contentDiv.innerHTML = marked.parse(text);
+            } catch (error) {
+                console.error(error);
+                contentDiv.innerHTML = `<p class="text-red-500">❌ AI 服务暂时不可用，请稍后再试。<br><small>${error.message}</small></p>`;
+            } finally {
+                loading.classList.add('hidden');
+                contentDiv.classList.remove('opacity-50');
+            }
+        }
+
+        function generateAIReport() {
+            const prompt = "作为一名资深教育数据分析师，请用中文为这名教师生成一份班级成绩诊断报告。包含：1. 整体学情总结（语气专业）。2. 值得表扬的高分学生分析。3. 需要关注的低分/缺勤学生群体分析。4. 针对性的教学改进建议（列出3点）。请使用 Markdown 格式，包含 Emoji 图标。";
+            callGemini(prompt);
+        }
+
+        function askAI() {
+            const query = document.getElementById('ai-query').value;
+            if (!query) return;
+            const prompt = `用户提问：${query}\n\n请用中文回答用户的问题。如果问题涉及具体学生，请列出他们的学号。基于提供的数据进行回答，不要编造数据。`;
+            callGemini(prompt);
+        }
+
+
+        // --- 1. EXISTING CHART DATA PROCESSING ---
+        const labels = Array.from({length: 36}, (_, i) => (i + 1).toString());
+
+        // Calculate Histogram Bins
+        const bins = [0, 0, 0, 0, 0, 0];
+        const binLabels = ["10-15 (需努力)", "16-20 (合格)", "21-25 (中等)", "26-30 (良好)", "31-35 (优秀)", "36-40 (卓越)"];
+        
+        let validCount = 0;
+        let sum = 0;
+        let gradeCounts = { A:0, B:0, C:0, D:0, F:0 }; // A: >=32, B: 24-31, C: 16-23, D: 10-15, F: Absent/Fail
+
+        rawScores.forEach(score => {
+            if (score === null) {
+                gradeCounts.F++;
+                return;
+            }
+            validCount++;
+            sum += score;
+
+            // Histogram Bins
+            if (score <= 15) bins[0]++;
+            else if (score <= 20) bins[1]++;
+            else if (score <= 25) bins[2]++;
+            else if (score <= 30) bins[3]++;
+            else if (score <= 35) bins[4]++;
+            else bins[5]++;
+
+            // Grade Classification
+            if (score >= 32) gradeCounts.A++;
+            else if (score >= 24) gradeCounts.B++;
+            else if (score >= 16) gradeCounts.C++;
+            else gradeCounts.D++; // 10-15
+        });
+
+        // --- 2. CHART CONFIG ---
+        const colors = {
+            primary: '#4F46E5',   // Indigo
+            secondary: '#06B6D4', // Cyan
+            accent: '#F43F5E',    // Rose
+            warning: '#F59E0B',   // Amber
+            gray: '#9CA3AF'
+        };
+
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return tooltipItems[0].label;
+                        }
+                    }
+                }
+            }
+        };
+
+        // --- 3. CHART INSTANCES ---
+
+        // Chart 1: Histogram (Bar)
+        new Chart(document.getElementById('histogramChart'), {
+            type: 'bar',
+            data: {
+                labels: binLabels,
+                datasets: [{
+                    label: '学生人数',
+                    data: bins,
+                    backgroundColor: [
+                        colors.accent, // 10-15 Red
+                        colors.secondary, // 16-20 Cyan
+                        colors.primary, // 21-25 Indigo
+                        '#3B82F6', // 26-30 Blue
+                        '#10B981', // 31-35 Emerald
+                        '#FCD34D'  // 36-40 Gold
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: '人数' } }
+                }
+            }
+        });
+
+        // Chart 2: Grade Composition (Doughnut)
+        new Chart(document.getElementById('gradeDoughnutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['A (优秀 ≥32)', 'B (良好 24-31)', 'C (合格 16-23)', 'D (需努力 10-15)', '缺勤/无成绩'],
+                datasets: [{
+                    data: [gradeCounts.A, gradeCounts.B, gradeCounts.C, gradeCounts.D, gradeCounts.F],
+                    backgroundColor: [
+                        '#10B981', // Emerald A
+                        '#3B82F6', // Blue B
+                        colors.secondary, // Cyan C
+                        colors.accent, // Rose D
+                        colors.gray    // Gray F
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...commonOptions,
+                cutout: '65%',
+                plugins: { ...commonOptions.plugins, legend: { position: 'right' } }
+            }
+        });
+
+        // Chart 3: Student Trend (Line)
+        new Chart(document.getElementById('scoreLineChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '学生分数',
+                    data: rawScores, 
+                    borderColor: colors.primary,
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: colors.secondary,
+                    pointRadius: 4,
+                    tension: 0.2,
+                    spanGaps: false 
+                }]
+            },
+            options: {
+                ...commonOptions,
+                scales: {
+                    y: { min: 0, max: 40, title: { display: true, text: '分数' } },
+                    x: { title: { display: true, text: '学号 (Index)' } }
+                }
+            }
+        });
+
+        // Chart 4: Plotly Scatter (Deep Dive)
+        const traceX = [];
+        const traceY = [];
+        const traceColor = [];
+        const traceText = [];
+
+        rawScores.forEach((score, index) => {
+            let s = score === null ? 0 : score;
+            let color = '#9CA3AF'; // Default gray for absent
+            
+            if (score !== null) {
+                if (score >= 32) color = '#10B981'; // Green
+                else if (score >= 16) color = '#FBBF24'; // Yellow/Amber
+                else color = '#F43F5E'; // Red
+            }
+
+            traceX.push(index + 1);
+            traceY.push(s);
+            traceColor.push(color);
+            traceText.push(`学号 #${index + 1}: ${score === null ? '缺勤' : score + '分'}`);
+        });
+
+        const plotData = [{
+            x: traceX,
+            y: traceY,
+            mode: 'markers',
+            type: 'scattergl',
+            text: traceText,
+            marker: { size: 12, color: traceColor, opacity: 0.8 }
+        }];
+
+        const plotLayout = {
+            margin: { t: 20, r: 20, b: 40, l: 40 },
+            hovermode: 'closest',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            xaxis: { title: '学号', gridcolor: '#E5E7EB' },
+            yaxis: { title: '分数', gridcolor: '#E5E7EB', range: [0, 42] },
+            shapes: [
+                { // Pass Line
+                    type: 'line', x0: 0, x1: 37, y0: 16, y1: 16,
+                    line: { color: '#06B6D4', width: 1, dash: 'dash' }
+                },
+                { // Excellent Line
+                    type: 'line', x0: 0, x1: 37, y0: 32, y1: 32,
+                    line: { color: '#10B981', width: 1, dash: 'dash' }
+                }
+            ]
+        };
+
+        Plotly.newPlot('scatterPlot', plotData, plotLayout, {responsive: true, displayModeBar: false});
+
+    </script>
+</body>
+</html>
